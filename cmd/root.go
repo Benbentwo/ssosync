@@ -40,8 +40,6 @@ var (
 	commit  = "none"
 	date    = "unknown"
 	builtBy = "unknown"
-
-	gitRepo = "unknown"
 )
 
 var cfg *config.Config
