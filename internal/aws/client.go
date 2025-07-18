@@ -31,13 +31,20 @@ var (
 	ErrUserNotFound     = errors.New("user not found")
 	ErrGroupNotFound    = errors.New("group not found")
 	ErrUserNotSpecified = errors.New("user not specified")
+	// ErrUserNotFound
+	ErrUserNotFound = errors.New("user not found")
+	// ErrGroupNotFound
+	ErrGroupNotFound = errors.New("group not found")
+	// ErrUserNotSpecified
+	ErrUserNotSpecified = errors.New("user not specified")
 )
 
-type ErrHttpNotOK struct {
+// ErrHTTPNotOK
+type ErrHTTPNotOK struct {
 	StatusCode int
 }
 
-func (e *ErrHttpNotOK) Error() string {
+func (e *ErrHTTPNotOK) Error() string {
 	return fmt.Sprintf("status of http response was %d", e.StatusCode)
 }
 
@@ -62,7 +69,7 @@ type Client interface {
 }
 
 type client struct {
-	httpClient  HttpClient
+	httpClient  HTTPClient
 	endpointURL *url.URL
 	bearerToken string
 }
@@ -70,7 +77,7 @@ type client struct {
 // NewClient creates a new client to talk with AWS SSO's SCIM endpoint. It
 // requires a http.Client{} as well as the URL and bearer token from the
 // console. If the URL is not parsable, an error will be thrown.
-func NewClient(c HttpClient, config *Config) (Client, error) {
+func NewClient(c HTTPClient, config *Config) (Client, error) {
 	u, err := url.Parse(config.Endpoint)
 	if err != nil {
 		return nil, err
@@ -118,7 +125,7 @@ func (c *client) sendRequestWithBody(method string, url string, body interface{}
 
 	// If we get a non-2xx status code, raise that via an error
 	if resp.StatusCode < http.StatusOK || resp.StatusCode > http.StatusNoContent {
-		err = &ErrHttpNotOK{resp.StatusCode}
+		err = &ErrHTTPNotOK{resp.StatusCode}
 	}
 
 	return
