@@ -5,7 +5,8 @@ before:
   hooks:
     - go mod download
 builds:
-- env:
+- id: cli
+  env:
     - CGO_ENABLED=0
   goos:
     - linux
@@ -47,8 +48,22 @@ changelog:
     - Merge pull request
     - Merge branch
 archives:
-  - name_template: >-
+  - id: cli
+    builds: [cli]
+    name_template: >-
       {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    format_overrides:
+    - goos: windows
+      formats: zip
+  - id: lambda
+    builds: [lambda]
+    name_template: >-
+      Lambda_{{- .ProjectName }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
