@@ -11,6 +11,8 @@ type Config struct {
 	LogFormat string `mapstructure:"log_format"`
 	// GoogleCredentials ...
 	GoogleCredentials string `mapstructure:"google_credentials"`
+	// GoogleCredentialsJSON is the JSON string for default Google credentials (optional, takes precedence if set)
+	GoogleCredentialsJSON string `mapstructure:"google_credentials_json"`
 	// GoogleAdmin ...
 	GoogleAdmin string `mapstructure:"google_admin"`
 	// UserMatch ...
@@ -50,6 +52,8 @@ const (
 	DefaultDebug = false
 	// DefaultGoogleCredentials is the default credentials path
 	DefaultGoogleCredentials = "credentials.json"
+	// DefaultGoogleCredentialsJSON is the default value for GoogleCredentialsJSON (empty string)
+	DefaultGoogleCredentialsJSON = ""
 	// DefaultSyncMethod is the default sync method to use.
 	DefaultSyncMethod = "groups"
 	// DefaultLoadSecretManagerSecrets determines whether to try and load secrets from ASM
@@ -64,6 +68,7 @@ func New() *Config {
 		LogFormat:                   DefaultLogFormat,
 		SyncMethod:                  DefaultSyncMethod,
 		GoogleCredentials:           DefaultGoogleCredentials,
+		GoogleCredentialsJSON:       DefaultGoogleCredentialsJSON,
 		LoadAwsSecretManagerSecrets: DefaultLoadSecretManagerSecrets,
 	}
 }

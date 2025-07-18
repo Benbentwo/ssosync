@@ -39,8 +39,8 @@ type client struct {
 }
 
 // NewClient creates a new client for Google's Admin API
-func NewClient(ctx context.Context, adminEmail string, serviceAccountKey []byte) (Client, error) {
-	config, err := google.JWTConfigFromJSON(serviceAccountKey, admin.AdminDirectoryGroupReadonlyScope,
+func NewClient(ctx context.Context, adminEmail string, googleCredentialsJson []byte) (Client, error) {
+	config, err := google.JWTConfigFromJSON(googleCredentialsJson, admin.AdminDirectoryGroupReadonlyScope,
 		admin.AdminDirectoryGroupMemberReadonlyScope,
 		admin.AdminDirectoryUserReadonlyScope)
 
@@ -101,13 +101,14 @@ func (c *client) GetGroupMembers(g *admin.Group) ([]*admin.Member, error) {
 // * https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/list
 // * https://developers.google.com/admin-sdk/directory/v1/guides/search-users
 // query possible values:
-// '' --> empty or not defined
-//  name:'Jane'
-//  email:admin*
-//  isAdmin=true
-//  manager='janesmith@example.com'
-//  orgName=Engineering orgTitle:Manager
-//  EmploymentData.projects:'GeneGnomes'
+// ” --> empty or not defined
+//
+//	name:'Jane'
+//	email:admin*
+//	isAdmin=true
+//	manager='janesmith@example.com'
+//	orgName=Engineering orgTitle:Manager
+//	EmploymentData.projects:'GeneGnomes'
 func (c *client) GetUsers(query string) ([]*admin.User, error) {
 	u := make([]*admin.User, 0)
 	var err error
@@ -167,13 +168,14 @@ func (c *client) GetUsers(query string) ([]*admin.User, error) {
 // * https://developers.google.com/admin-sdk/directory/reference/rest/v1/groups/list
 // * https://developers.google.com/admin-sdk/directory/v1/guides/search-groups
 // query possible values:
-// '' --> empty or not defined
-//  name='contact'
-//  email:admin*
-//  memberKey=user@company.com
-//  name:contact* email:contact*
-//  name:Admin* email:aws-*
-//  email:aws-*
+// ” --> empty or not defined
+//
+//	name='contact'
+//	email:admin*
+//	memberKey=user@company.com
+//	name:contact* email:contact*
+//	name:Admin* email:aws-*
+//	email:aws-*
 func (c *client) GetGroups(query string) ([]*admin.Group, error) {
 	g := make([]*admin.Group, 0)
 	var err error
