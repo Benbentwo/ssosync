@@ -160,6 +160,7 @@ func initConfig() {
 	appEnvVars := []string{
 		"google_admin",
 		"google_credentials",
+		"google_credentials_json",
 		"scim_access_token",
 		"scim_endpoint",
 		"log_level",
@@ -185,13 +186,23 @@ func initConfig() {
 		log.Fatalf(errors.Wrap(err, "cannot unmarshal config").Error())
 	}
 
+	if viper.GetString("google_credentials_json") != "" {
+		err := os.WriteFile("/tmp/credentials.json", []byte(viper.GetString("google_credentials_json")), 0600)
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot write credentials.json").Error())
+		}
+	}
+
 	if cfg.IsLambda {
 		configLambda()
 	}
 
+	if viper.GetString("google_credentials_json") != "" {
+		cfg.GoogleCredentials = "/tmp/credentials.json"
+	}
+
 	// config logger
 	logConfig(cfg)
-
 }
 
 func configLambda() {
@@ -199,43 +210,47 @@ func configLambda() {
 	svc := secretsmanager.New(s)
 	secrets := config.NewSecrets(svc)
 
-	unwrap, err := secrets.GoogleAdminEmail(os.Getenv("GOOGLE_ADMIN"))
-	if err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot read config: GOOGLE_ADMIN").Error())
-	}
-	cfg.GoogleAdmin = unwrap
+	if cfg.LoadAwsSecretManagerSecrets {
+		unwrap, err := secrets.GoogleAdminEmail(os.Getenv("GOOGLE_ADMIN"))
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot read config: GOOGLE_ADMIN").Error())
+		}
+		cfg.GoogleAdmin = unwrap
 
-	unwrap, err = secrets.GoogleCredentials(os.Getenv("GOOGLE_CREDENTIALS"))
-	if err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot read config: GOOGLE_CREDENTIALS").Error())
-	}
-	cfg.GoogleCredentials = unwrap
+		unwrap, err = secrets.GoogleCredentials(os.Getenv("GOOGLE_CREDENTIALS"))
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot read config: GOOGLE_CREDENTIALS").Error())
+		}
+		cfg.GoogleCredentials = unwrap
 
-	unwrap, err = secrets.SCIMAccessToken(os.Getenv("SCIM_ACCESS_TOKEN"))
-	if err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot read config: SCIM_ACCESS_TOKEN").Error())
-	}
-	cfg.SCIMAccessToken = unwrap
+		unwrap, err = secrets.SCIMAccessToken(os.Getenv("SCIM_ACCESS_TOKEN"))
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot read config: SCIM_ACCESS_TOKEN").Error())
+		}
+		cfg.SCIMAccessToken = unwrap
 
-	unwrap, err = secrets.SCIMEndpointURL(os.Getenv("SCIM_ENDPOINT"))
-	if err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot read config: SCIM_ENDPOINT").Error())
-	}
-	cfg.SCIMEndpoint = unwrap
+		unwrap, err = secrets.SCIMEndpointURL(os.Getenv("SCIM_ENDPOINT"))
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot read config: SCIM_ENDPOINT").Error())
+		}
+		cfg.SCIMEndpoint = unwrap
 
-	unwrap, err = secrets.Region(os.Getenv("REGION"))
-	if err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot read config: REGION").Error())
-	}
-	cfg.Region = unwrap
+		unwrap, err = secrets.Region(os.Getenv("REGION"))
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot read config: REGION").Error())
+		}
+		cfg.Region = unwrap
 
-	unwrap, err = secrets.IdentityStoreID(os.Getenv("IDENTITY_STORE_ID"))
-	if err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot read config: IDENTITY_STORE_ID").Error())
+		unwrap, err = secrets.IdentityStoreID(os.Getenv("IDENTITY_STORE_ID"))
+		if err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot read config: IDENTITY_STORE_ID").Error())
+		}
+		cfg.IdentityStoreID = unwrap
+	} else {
+		log.Info("Not loading AWS Secret Manager secrets")
 	}
-	cfg.IdentityStoreID = unwrap
 
-	unwrap = os.Getenv("LOG_LEVEL")
+	unwrap := os.Getenv("LOG_LEVEL")
 	if len([]rune(unwrap)) != 0 {
 		cfg.LogLevel = unwrap
 		log.WithField("LogLevel", unwrap).Debug("from EnvVar")
@@ -244,7 +259,7 @@ func configLambda() {
 	unwrap = os.Getenv("LOG_FORMAT")
 	if len([]rune(unwrap)) != 0 {
 		cfg.LogFormat = unwrap
-		log.WithField("LogFormay", unwrap).Debug("from EnvVar")
+		log.WithField("LogFormat", unwrap).Debug("from EnvVar")
 	}
 
 	unwrap = os.Getenv("SYNC_METHOD")
@@ -293,6 +308,7 @@ func addFlags(cmd *cobra.Command, cfg *config.Config) {
 	rootCmd.Flags().StringVarP(&cfg.SCIMAccessToken, "access-token", "t", "", "AWS SSO SCIM API Access Token")
 	rootCmd.Flags().StringVarP(&cfg.SCIMEndpoint, "endpoint", "e", "", "AWS SSO SCIM API Endpoint")
 	rootCmd.Flags().StringVarP(&cfg.GoogleCredentials, "google-credentials", "c", config.DefaultGoogleCredentials, "path to Google Workspace credentials file")
+	rootCmd.Flags().StringVarP(&cfg.GoogleCredentialsJSON, "google-credentials-json", "j", config.DefaultGoogleCredentialsJSON, "JSON string for default Google credentials (optional, takes precedence if set)")
 	rootCmd.Flags().StringVarP(&cfg.GoogleAdmin, "google-admin", "u", "", "Google Workspace admin user email")
 	rootCmd.Flags().StringSliceVar(&cfg.IgnoreUsers, "ignore-users", []string{}, "ignores these Google Workspace users")
 	rootCmd.Flags().StringSliceVar(&cfg.IgnoreGroups, "ignore-groups", []string{}, "ignores these Google Workspace groups")

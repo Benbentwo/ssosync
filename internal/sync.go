@@ -180,17 +180,18 @@ func (s *syncGSuite) SyncGroups(query string) error {
 	if err != nil {
 		return err
 	}
+	log.WithField("count", len(googleGroups)).Debug("get google groups")
 
 	correlatedGroups := make(map[string]*aws.Group)
 
 	for _, g := range googleGroups {
-		if s.ignoreGroup(g.Email) || !s.includeGroup(g.Email) {
-			continue
-		}
-
 		log := log.WithFields(log.Fields{
 			"group": g.Email,
 		})
+
+		if s.ignoreGroup(g.Email) || !s.includeGroup(g.Email) {
+			continue
+		}
 
 		log.Debug("Check group")
 		var group *aws.Group
@@ -751,6 +752,9 @@ func DoSync(ctx context.Context, cfg *config.Config) error {
 	log.Info("Syncing AWS users and groups from Google Workspace SAML Application")
 
 	creds := []byte(cfg.GoogleCredentials)
+	if cfg.GoogleCredentialsJSON != "" {
+		creds = []byte(cfg.GoogleCredentialsJSON)
+	}
 
 	if !cfg.IsLambda {
 		b, err := os.ReadFile(cfg.GoogleCredentials)
@@ -852,6 +856,7 @@ func (s *syncGSuite) ignoreUser(name string) bool {
 func (s *syncGSuite) ignoreGroup(name string) bool {
 	for _, g := range s.cfg.IgnoreGroups {
 		if g == name {
+			log.WithField("group", name).Debug("Skipping group - in ignore list")
 			return true
 		}
 	}
@@ -860,12 +865,15 @@ func (s *syncGSuite) ignoreGroup(name string) bool {
 }
 
 func (s *syncGSuite) includeGroup(name string) bool {
+	if len(s.cfg.IncludeGroups) == 0 {
+		return true
+	}
 	for _, g := range s.cfg.IncludeGroups {
 		if g == name {
 			return true
 		}
 	}
-
+	log.WithField("group", name).Debug("Skipping group - not in include list")
 	return false
 }
 
