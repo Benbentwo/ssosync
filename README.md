@@ -28,25 +28,25 @@ The original `ssosync` required AWS Secrets Manager for sensitive parameters lik
 
 All settings are configurable via env vars (or CLI flags):
 
-| Env Variable                                                                                     | Description                         |
-| ------------------------------------------------------------------------------------------------ | ----------------------------------- |
-| `GOOGLE_CREDENTIALS`                                                                             | Path to Google service‑account JSON |
-| `GOOGLE_ADMIN`                                                                                   | Workspace admin email               |
-| `SCIM_ENDPOINT`                                                                                  | AWS SSO SCIM endpoint URL           |
-| `SCIM_ACCESS_TOKEN`                                                                              | AWS SSO SCIM access token           |
-| Optional filters: `USER_MATCH`, `GROUP_MATCH`, `IGNORE_USERS`, `IGNORE_GROUPS`, `INCLUDE_GROUPS` |                                     |
-| Sync mode: `SYNC_METHOD` (`groups` or `users_groups`)                                            |                                     |
-| Logging options: `LOG_LEVEL`, `LOG_FORMAT`                                                       |                                     |
+| Env Variable                                                                                                                             | Description                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `SSOSYNC_GOOGLE_CREDENTIALS`                                                                                                             | Path to Google service‑account JSON |
+| `SSOSYNC_GOOGLE_ADMIN`                                                                                                                   | Workspace admin email               |
+| `SSOSYNC_SCIM_ENDPOINT`                                                                                                                  | AWS SSO SCIM endpoint URL           |
+| `SSOSYNC_SCIM_ACCESS_TOKEN`                                                                                                              | AWS SSO SCIM access token           |
+| Optional filters: `SSOSYNC_USER_MATCH`, `SSOSYNC_GROUP_MATCH`, `SSOSYNC_IGNORE_USERS`, `SSOSYNC_IGNORE_GROUPS`, `SSOSYNC_INCLUDE_GROUPS` |                                     |
+| Sync mode: `SSOSYNC_SYNC_METHOD` (`groups` or `users_groups`)                                                                            |                                     |
+| Logging options: `SSOSYNC_LOG_LEVEL`, `SSOSYNC_LOG_FORMAT`                                                                               |                                     |
 
 These map exactly to the fork’s CLI flags, e.g.:
 
 ```bash
-export GOOGLE_CREDENTIALS="/secrets/google-creds.json"
-export GOOGLE_ADMIN="admin@example.com"
-export SCIM_ENDPOINT="https://portal.sso.us-west-2.amazonaws.com/scim/v2"
-export SCIM_ACCESS_TOKEN="xxxx"
-export SYNC_METHOD="groups"
-export GROUP_MATCH="name:Dev*"
+export SSOSYNC_GOOGLE_CREDENTIALS="/secrets/google-creds.json"
+export SSOSYNC_GOOGLE_ADMIN="admin@example.com"
+export SSOSYNC_SCIM_ENDPOINT="https://portal.sso.us-west-2.amazonaws.com/scim/v2"
+export SSOSYNC_SCIM_ACCESS_TOKEN="xxxx"
+export SSOSYNC_SYNC_METHOD="groups"
+export SSOSYNC_GROUP_MATCH="name:Dev*"
 ```
 
 ---
